@@ -1,0 +1,5 @@
+media_facebook_post.link:
+  title: 'Facebook Link'
+  parent: system.admin_config_services
+  description: 'Link this website with a Facebook account.'
+  route_name: media_facebook_post.link

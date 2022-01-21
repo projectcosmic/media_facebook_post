@@ -22,4 +22,15 @@ interface FacebookFetcherInterface {
    */
   public function getPost($id);
 
+  /**
+   * Gets a long-lived page token from a code from OAuth.
+   *
+   * @param string $code
+   *   The code.
+   *
+   * @return string|null
+   *   The access token or NULL if an error occurred.
+   */
+  public function getPageToken($code);
+
 }

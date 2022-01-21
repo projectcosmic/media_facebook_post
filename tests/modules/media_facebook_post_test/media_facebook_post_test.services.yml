@@ -1,0 +1,5 @@
+services:
+  media_facebook_post_test.http_client:
+    class: GuzzleHttp\Client
+    factory: [Drupal\media_facebook_post_test\HttpClientFactory, create]
+    arguments: ['@state']

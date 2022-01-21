@@ -1,0 +1,5 @@
+name: Media Facebook Post test module
+type: module
+description: 'Support module for Media Facebook Post tests.'
+package: Testing
+core_version_requirement: ^9

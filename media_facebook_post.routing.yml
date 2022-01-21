@@ -1,0 +1,15 @@
+media_facebook_post.link:
+  path: '/admin/media-facebook-post/link'
+  defaults:
+    _title: 'Link Facebook'
+    _controller: '\Drupal\media_facebook_post\Controller\MediaFacebookPostController::link'
+  requirements:
+    _permission: 'media_facebook_post link facebook'
+
+media_facebook_post.after_login:
+  path: '/admin/media-facebook-post/after-login'
+  defaults:
+    _title: 'After Facebook Login'
+    _controller: '\Drupal\media_facebook_post\Controller\MediaFacebookPostController::afterLogin'
+  requirements:
+    _permission: 'media_facebook_post link facebook'
