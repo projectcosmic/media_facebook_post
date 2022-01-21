@@ -1,0 +1,7 @@
+services:
+  logger.channel.media_facebook_post:
+    parent: logger.channel_base
+    arguments: ['media_facebook_post']
+  media_facebook_post.facebook_fetcher:
+    class: Drupal\media_facebook_post\FacebookFetcher
+    arguments: ['@state', '@http_client', '@logger.channel.media_facebook_post']
