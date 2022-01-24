@@ -162,7 +162,7 @@ class FacebookPost extends MediaSourceBase {
 
         case 'thumbnail_width':
         case 'thumbnail_height':
-          if ($local_picture = $this->getMetadata($media, $attribute_name)) {
+          if ($local_picture = $this->getMetadata($media, 'thumbnail_uri')) {
             $image = $this->imageFactory->get($local_picture);
             return $attribute_name == 'thumbnail_width'
               ? $image->getWidth()
