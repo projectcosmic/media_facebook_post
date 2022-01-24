@@ -107,8 +107,9 @@ class FacebookFetcher implements FacebookFetcherInterface {
    */
   public function getPagePosts($token, $limit = 100) {
     try {
-      $response = $this->httpClient->get("https://graph.facebook.com/v12.0/me?fields=posts.limit($limit){id,created_time}", [
+      $response = $this->httpClient->get('https://graph.facebook.com/v12.0/me', [
         'query' => [
+          'fields' => "posts.limit($limit){id,created_time}",
           'access_token' => $token,
         ],
       ]);
