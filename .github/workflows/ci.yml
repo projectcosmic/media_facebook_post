@@ -49,6 +49,7 @@ jobs:
           cd web
           php -S localhost:8888 .ht.router.php >& /dev/null &
           mkdir -p sites/simpletest/browser_output
+          curl https://git.drupalcode.org/project/drupal/-/commit/faec13d270b5417c747c40323cff66c5513c37a1.diff | patch -p1
           ../vendor/bin/phpunit -c core modules/custom/${{ github.event.repository.name }}
         env:
           SIMPLETEST_DB: mysql://root:root@127.0.0.1/tests
