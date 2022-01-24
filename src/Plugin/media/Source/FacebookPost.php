@@ -272,9 +272,10 @@ class FacebookPost extends MediaSourceBase {
    * {@inheritdoc}
    */
   public function createSourceField(MediaTypeInterface $type) {
-    return parent::createSourceField($type)->set('description', [
-      'description' => $this->t('Must be in the form <code>[PAGE_ID]_[POST_ID]</code>, for example: <code>0123456789_0123456789</code>.'),
-    ]);
+    return parent::createSourceField($type)->set(
+      'description',
+      $this->t('Must be in the form <code>[PAGE_ID]_[POST_ID]</code>, for example: <code>0123456789_0123456789</code>.'),
+    );
   }
 
   /**
