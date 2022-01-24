@@ -1,0 +1,30 @@
+<?php
+
+/**
+ * @file
+ * Provides media integration for Facebook posts.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+
+/**
+ * Implements hook_cron().
+ */
+function media_facebook_post_cron() {
+  $queue = \Drupal::queue('media_facebook_post_fetch');
+
+  /** @var \Drupal\media\MediaTypeInterface[] $bundles */
+  $bundles = \Drupal::entityTypeManager()->getStorage('media_type')->loadByProperties([
+    'source' => 'facebook_post',
+  ]);
+  foreach ($bundles as $bundle) {
+    $queue->createItem($bundle);
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
+ */
+function media_facebook_post_media_type_delete(EntityInterface $entity) {
+  \Drupal::state()->delete("media_facebook_post.{$entity->id()}.since");
+}

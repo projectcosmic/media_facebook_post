@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldTypePluginManagerInterface;
 use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Image\ImageFactory;
 use Drupal\media\MediaInterface;
 use Drupal\media\MediaSourceBase;
@@ -266,6 +267,31 @@ class FacebookPost extends MediaSourceBase {
     // If no file extension could be determined from the Content-Type header,
     // we're stumped.
     return NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function defaultConfiguration() {
+    return array_merge(parent::defaultConfiguration(), ['fetch_count' => 0]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    $form = parent::buildConfigurationForm($form, $form_state);
+
+    $form['fetch_count'] = [
+      '#title' => $this->t('Automatic fetch count'),
+      '#type' => 'number',
+      '#min' => 0,
+      '#max' => 100,
+      '#description' => $this->t('The number of Facebook posts to fetch via cron. Set to 0 to disable.'),
+      '#default_value' => $this->configuration['fetch_count'] ?? 0,
+    ];
+
+    return $form;
   }
 
   /**

@@ -9,5 +9,17 @@
  * Implements hook_uninstall().
  */
 function media_facebook_post_uninstall() {
-  \Drupal::state()->delete('media_facebook_post.token');
+  $states = ['media_facebook_post.token'];
+
+  /** @var \Drupal\media\MediaTypeInterface[] $media_bundles */
+  $media_bundles = \Drupal::entityTypeManager()
+    ->getStorage('media_type')
+    ->loadMultiple();
+  foreach ($media_bundles as $bundle) {
+    if ($bundle->getSource()->getPluginId() == 'facebook_post') {
+      $states[] = "media_facebook_post.{$bundle->id()}.since";
+    }
+  }
+
+  \Drupal::state()->deleteMultiple($states);
 }

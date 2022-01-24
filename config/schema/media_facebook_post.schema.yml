@@ -10,3 +10,10 @@ media_facebook_post.settings:
           type: string
         app_secret:
           type: string
+
+media.source.facebook_post:
+  type: media.source.field_aware
+  label: '"Facebook Post" media source configuration'
+  mapping:
+    fetch_count:
+      type: integer
