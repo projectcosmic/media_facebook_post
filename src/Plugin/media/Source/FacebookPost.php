@@ -4,6 +4,7 @@ namespace Drupal\media_facebook_post\Plugin\media\Source;
 
 use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -12,6 +13,7 @@ use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Image\ImageFactory;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\media\MediaInterface;
 use Drupal\media\MediaSourceBase;
 use Drupal\media\MediaTypeInterface;
@@ -71,6 +73,13 @@ class FacebookPost extends MediaSourceBase {
   protected $facebookFetcher;
 
   /**
+   * The date formatter.
+   *
+   * @var \Drupal\Core\Datetime\DateFormatterInterface
+   */
+  protected $dateFormatter;
+
+  /**
    * Constructs a new FacebookPost instance.
    *
    * @param array $configuration
@@ -97,14 +106,17 @@ class FacebookPost extends MediaSourceBase {
    *   The image factory.
    * @param \Drupal\media_facebook_post\FacebookFetcherInterface $facebook_fetcher
    *   The Facebook fetcher service.
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   *   The date formatter.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, ConfigFactoryInterface $config_factory, LoggerInterface $logger, ClientInterface $http_client, FileSystemInterface $file_system, ImageFactory $image_factory, FacebookFetcherInterface $facebook_fetcher) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, ConfigFactoryInterface $config_factory, LoggerInterface $logger, ClientInterface $http_client, FileSystemInterface $file_system, ImageFactory $image_factory, FacebookFetcherInterface $facebook_fetcher, DateFormatterInterface $date_formatter) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $entity_field_manager, $field_type_manager, $config_factory);
     $this->logger = $logger;
     $this->httpClient = $http_client;
     $this->fileSystem = $file_system;
     $this->imageFactory = $image_factory;
     $this->facebookFetcher = $facebook_fetcher;
+    $this->dateFormatter = $date_formatter;
   }
 
   /**
@@ -123,7 +135,8 @@ class FacebookPost extends MediaSourceBase {
       $container->get('http_client'),
       $container->get('file_system'),
       $container->get('image.factory'),
-      $container->get('media_facebook_post.facebook_fetcher')
+      $container->get('media_facebook_post.facebook_fetcher'),
+      $container->get('date.formatter'),
     );
   }
 
@@ -134,6 +147,7 @@ class FacebookPost extends MediaSourceBase {
     return [
       'id' => $this->t('ID'),
       'message' => $this->t('Post text content'),
+      'created_time' => $this->t('Created datetime'),
       'thumbnail_uri' => $this->t('Thumbnail URI'),
       'thumbnail_width' => $this->t('Thumbnail width'),
       'thumbnail_height' => $this->t('Thumbnail height'),
@@ -151,12 +165,19 @@ class FacebookPost extends MediaSourceBase {
     }
 
     if ($post = $this->facebookFetcher->getPost($id)) {
-      switch ($post) {
+      switch ($attribute_name) {
         case 'message':
           return $post['message'] ?? NULL;
 
+        case 'created_time':
+          return $this->dateFormatter->format(
+            strtotime($post['created_time']),
+            'custom',
+            DateTimeItemInterface::DATETIME_STORAGE_FORMAT
+          );
+
         case 'thumbnail_uri':
-          return !empty($post['full_picture'])
+          return isset($post['full_picture'])
             ? $this->getLocalPictureUrl($post['full_picture'])
             : NULL;
 
