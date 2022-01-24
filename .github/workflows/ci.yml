@@ -1,0 +1,62 @@
+name: Continuous Integration
+
+on:
+  push:
+    paths-ignore:
+      # Files in .github do not affect the build; only for GitHub interaction.
+      - .github/**
+      # Exception is workflows subdirectory, where this file sits.
+      - '!.github/workflows/**'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  ci:
+    name: Continuous Integration
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Set up composer
+        id: setup
+        run: |
+          sudo update-alternatives --set php /usr/bin/php7.4
+          echo "::set-output name=dir::$(php composer config cache-dir)"
+      - uses: actions/cache@v2
+        with:
+          path: ${{ steps.setup.outputs.dir }}
+          key: v1-composer
+      - name: Set up Drupal core
+        run: |
+          composer create-project drupal/recommended-project . --no-progress
+          composer require drupal/core-dev --no-progress
+      - uses: actions/checkout@v2
+        with:
+          path: web/modules/custom/${{ github.event.repository.name }}
+      - name: Run PHP_CodeSniffer
+        run: |
+          ./vendor/bin/phpcs --config-set installed_paths '../../drupal/coder/coder_sniffer'
+          ./vendor/bin/phpcs \
+            --standard=Drupal,DrupalPractice \
+            --runtime-set ignore_warnings_on_exit 1 \
+            --report-full \
+            web/modules/custom/${{ github.event.repository.name }}
+      - name: Run PHPUnit Tests
+        run: |
+          composer require --dev phpspec/prophecy-phpunit:^2
+          sudo systemctl start mysql.service
+          mysql -u root -proot -e 'create database tests'
+          cd web
+          php -S localhost:8888 .ht.router.php >& /dev/null &
+          mkdir -p sites/simpletest/browser_output
+          ../vendor/bin/phpunit -c core modules/custom/${{ github.event.repository.name }}
+        env:
+          SIMPLETEST_DB: mysql://root:root@127.0.0.1/tests
+          SIMPLETEST_BASE_URL: http://localhost:8888
+          BROWSERTEST_OUTPUT_DIRECTORY: simpletest/browser_output
+        if: '!cancelled()'
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: test-browser-output
+          path: web/sites/simpletest/browser_output
