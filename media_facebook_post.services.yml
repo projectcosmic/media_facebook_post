@@ -7,4 +7,4 @@ services:
     arguments: ['@tempstore.private', '@uuid']
   media_facebook_post.facebook_fetcher:
     class: Drupal\media_facebook_post\FacebookFetcher
-    arguments: ['@state', '@http_client', '@logger.channel.media_facebook_post', '@config.factory']
+    arguments: ['@state', '@http_client', '@logger.channel.media_facebook_post', '@config.factory', '@cache.default']

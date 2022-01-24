@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\media_facebook_post\Unit;
 
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\State\StateInterface;
 use Drupal\media_facebook_post\FacebookFetcher;
@@ -27,6 +28,7 @@ class FacebookFetcherTest extends UnitTestCase {
     $state = $this->createMock(StateInterface::class);
     $logger = $this->createMock(LoggerInterface::class);
     $logger->expects($this->once())->method('error');
+    $cache_backend = $this->createMock(CacheBackendInterface::class);
 
     $mock = new MockHandler([
       new RequestException('Error', new Request('GET', 'https://graph.facebook.com/12.0/__POST_ID__')),
@@ -34,7 +36,7 @@ class FacebookFetcherTest extends UnitTestCase {
     ]);
     $client = new Client(['handler' => HandlerStack::create($mock)]);
 
-    $fetcher = new FacebookFetcher($state, $client, $logger, $this->getConfigFactoryStub());
+    $fetcher = new FacebookFetcher($state, $client, $logger, $this->getConfigFactoryStub(), $cache_backend);
     $this->assertNull($fetcher->getPost($this->randomMachineName()), 'Request exception results in NULL return value.');
     $this->assertIsArray($fetcher->getPost($this->randomMachineName()), 'Returns array of data.');
   }
@@ -49,8 +51,9 @@ class FacebookFetcherTest extends UnitTestCase {
     $logger = $this->createMock(LoggerInterface::class);
     $logger->expects($expected === NULL ? $this->once() : $this->never())->method('error');
     $config_factory = $this->getConfigFactoryStub(['media_facebook_post.settings' => []]);
+    $cache_backend = $this->createMock(CacheBackendInterface::class);
 
-    $fetcher = new FacebookFetcher($state, $client, $logger, $config_factory);
+    $fetcher = new FacebookFetcher($state, $client, $logger, $config_factory, $cache_backend);
     $assert = is_int($expected) ? 'assertCount' : 'assertEquals';
     $this->{$assert}($expected, $fetcher->getPagePosts($this->randomMachineName()));
   }
@@ -100,13 +103,14 @@ class FacebookFetcherTest extends UnitTestCase {
     $logger = $this->createMock(LoggerInterface::class);
     $logger->expects($expect_error ? $this->once() : $this->never())->method('error');
     $config_factory = $this->getConfigFactoryStub(['media_facebook_post.settings' => []]);
+    $cache_backend = $this->createMock(CacheBackendInterface::class);
 
     $urlGenerator = $this->createMock('Drupal\Core\Routing\UrlGeneratorInterface');
     $container = new ContainerBuilder();
     $container->set('url_generator', $urlGenerator);
     \Drupal::setContainer($container);
 
-    $fetcher = new FacebookFetcher($state, $client, $logger, $config_factory);
+    $fetcher = new FacebookFetcher($state, $client, $logger, $config_factory, $cache_backend);
     $this->assertEquals($expected, $fetcher->getPageToken($this->randomMachineName()));
   }
 

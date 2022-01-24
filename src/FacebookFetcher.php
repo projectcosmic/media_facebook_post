@@ -2,6 +2,7 @@
 
 namespace Drupal\media_facebook_post;
 
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\Url;
@@ -43,6 +44,13 @@ class FacebookFetcher implements FacebookFetcherInterface {
   protected $config;
 
   /**
+   * The cache backend.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cacheBackend;
+
+  /**
    * Constructs the Facebook fetcher service.
    *
    * @param \Drupal\Core\State\StateInterface $state
@@ -53,18 +61,28 @@ class FacebookFetcher implements FacebookFetcherInterface {
    *   A logger instance.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory service.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
+   *   The cache backend.
    */
-  public function __construct(StateInterface $state, ClientInterface $http_client, LoggerInterface $logger, ConfigFactoryInterface $config_factory) {
+  public function __construct(StateInterface $state, ClientInterface $http_client, LoggerInterface $logger, ConfigFactoryInterface $config_factory, CacheBackendInterface $cache_backend) {
     $this->state = $state;
     $this->httpClient = $http_client;
     $this->logger = $logger;
     $this->config = $config_factory->get('media_facebook_post.settings');
+    $this->cacheBackend = $cache_backend;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getPost($id) {
+    $cache_id = "media:facebook_post:$id";
+
+    $cached = $this->cacheBackend->get($cache_id);
+    if ($cached) {
+      return $cached->data;
+    }
+
     try {
       $response = $this->httpClient->get("https://graph.facebook.com/v12.0/$id", [
         'query' => [
@@ -73,7 +91,9 @@ class FacebookFetcher implements FacebookFetcherInterface {
         ],
       ]);
 
-      return json_decode((string) $response->getBody(), TRUE);
+      $data = json_decode((string) $response->getBody(), TRUE);
+      $this->cacheBackend->set($cache_id, $data);
+      return $data;
     }
     catch (TransferException $e) {
       $this->logger->error($e->__toString());
