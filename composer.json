@@ -1,0 +1,8 @@
+{
+    "name": "projectcosmic/media_facebook_post",
+    "description": "Provides media integration for Facebook posts.",
+    "type": "drupal-module",
+    "require": {
+        "drupal/core": "^9"
+    }
+}
