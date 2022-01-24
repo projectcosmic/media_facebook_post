@@ -23,6 +23,22 @@ interface FacebookFetcherInterface {
   public function getPost($id);
 
   /**
+   * Gets posts for a page from its access token.
+   *
+   * @param string $token
+   *   A page access token.
+   * @param int $limit
+   *   (optional). The number of posts to fetch. Default 100.
+   *
+   * @return array[]|null
+   *   NULL if an error occurred, otherwise a list of post arrays, each
+   *   containing:
+   *   - id: The Facebook ID of the post.
+   *   - created_time: The created time as ISO 8601 format.
+   */
+  public function getPagePosts($token, $limit = 100);
+
+  /**
    * Gets a long-lived page token from a code from OAuth.
    *
    * @param string $code

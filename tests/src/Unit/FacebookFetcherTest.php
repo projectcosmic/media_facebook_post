@@ -40,6 +40,57 @@ class FacebookFetcherTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::getPagePosts()
+   * @dataProvider getPagePostsProvider
+   */
+  public function testGetPagePosts($mock_handler, $expected = NULL) {
+    $state = $this->createMock(StateInterface::class);
+    $client = new Client(['handler' => HandlerStack::create($mock_handler)]);
+    $logger = $this->createMock(LoggerInterface::class);
+    $logger->expects($expected === NULL ? $this->once() : $this->never())->method('error');
+    $config_factory = $this->getConfigFactoryStub(['media_facebook_post.settings' => []]);
+
+    $fetcher = new FacebookFetcher($state, $client, $logger, $config_factory);
+    $assert = is_int($expected) ? 'assertCount' : 'assertEquals';
+    $this->{$assert}($expected, $fetcher->getPagePosts($this->randomMachineName()));
+  }
+
+  /**
+   * Provides test cases for ::testGetPagePosts().
+   */
+  public function getPagePostsProvider() {
+    $page_id = random_int(10000, PHP_INT_MAX);
+
+    return [
+      'Error requesting /me' => [
+        new MockHandler([
+          new RequestException('Error getting /me', new Request('GET', 'https://graph.facebook.com/v12.0/me')),
+        ]),
+      ],
+      'Successful' => [
+        new MockHandler([
+          new Response(200, [], json_encode([
+            'id' => (string) $page_id,
+            'posts' => [
+              'data' => [
+                [
+                  'created_time' => date('c', 2000),
+                  'id' => "{$page_id}_1000",
+                ],
+                [
+                  'created_time' => date('c', 3000),
+                  'id' => "{$page_id}_1001",
+                ],
+              ],
+            ],
+          ])),
+        ]),
+        2,
+      ],
+    ];
+  }
+
+  /**
    * @covers ::getPageToken()
    * @dataProvider getPageTokenProvider
    */

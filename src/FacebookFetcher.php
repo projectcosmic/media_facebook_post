@@ -85,6 +85,27 @@ class FacebookFetcher implements FacebookFetcherInterface {
   /**
    * {@inheritdoc}
    */
+  public function getPagePosts($token, $limit = 100) {
+    try {
+      $response = $this->httpClient->get("https://graph.facebook.com/v12.0/me?fields=posts.limit($limit){id,created_time}", [
+        'query' => [
+          'access_token' => $token,
+        ],
+      ]);
+
+      $data = json_decode((string) $response->getBody(), TRUE);
+      return $data['posts']['data'] ?? [];
+    }
+    catch (TransferException $e) {
+      $this->logger->error($e->__toString());
+    }
+
+    return NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getPageToken($code) {
     try {
       $response = $this->httpClient->get('https://graph.facebook.com/v12.0/oauth/access_token', [
