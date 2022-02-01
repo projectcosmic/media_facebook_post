@@ -5,6 +5,9 @@
  * Install, update and uninstall functions for the Media Facebook Post module.
  */
 
+use Drupal\Core\File\Exception\FileException;
+use Drupal\Core\File\FileSystemInterface;
+
 /**
  * Implements hook_install().
  */
