@@ -4,3 +4,5 @@ type: module
 core_version_requirement: ^9
 version: '0.1.0'
 project: media_facebook_post
+dependencies:
+  - drupal:media

@@ -6,6 +6,58 @@
  */
 
 /**
+ * Implements hook_install().
+ */
+function media_facebook_post_install() {
+  $source = \Drupal::service('extension.list.module')->getPath('media_facebook_post') . '/images/facebook.png';
+  $destination = \Drupal::config('media.settings')->get('icon_base_uri');
+  /** @var \Drupal\Core\File\FileSystemInterface $file_system */
+  $file_system = \Drupal::service('file_system');
+  $file_system->prepareDirectory($destination, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+
+  // When reinstalling the module we don't want to copy the icons when they
+  // already exist. The icons could be replaced (by a contrib module or
+  // manually), so we don't want to replace the existing files. Removing the
+  // files when we uninstall could also be a problem if the files are
+  // referenced somewhere else. Since showing an error that it was not
+  // possible to copy the files is also confusing, we silently do nothing.
+  if (!file_exists($destination . DIRECTORY_SEPARATOR . 'facebook.png')) {
+    try {
+      $file_system->copy($source, $destination, FileSystemInterface::EXISTS_ERROR);
+    }
+    catch (FileException $e) {
+      // Ignore and continue.
+    }
+  }
+}
+
+/**
+ * Adds a default media thumbnail image.
+ */
+function media_facebook_post_update_9001() {
+  $source = \Drupal::service('extension.list.module')->getPath('media_facebook_post') . '/images/facebook.png';
+  $destination = \Drupal::config('media.settings')->get('icon_base_uri');
+  /** @var \Drupal\Core\File\FileSystemInterface $file_system */
+  $file_system = \Drupal::service('file_system');
+  $file_system->prepareDirectory($destination, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+
+  // When reinstalling the module we don't want to copy the icons when they
+  // already exist. The icons could be replaced (by a contrib module or
+  // manually), so we don't want to replace the existing files. Removing the
+  // files when we uninstall could also be a problem if the files are
+  // referenced somewhere else. Since showing an error that it was not
+  // possible to copy the files is also confusing, we silently do nothing.
+  if (!file_exists($destination . DIRECTORY_SEPARATOR . 'facebook.png')) {
+    try {
+      $file_system->copy($source, $destination, FileSystemInterface::EXISTS_ERROR);
+    }
+    catch (FileException $e) {
+      // Ignore and continue.
+    }
+  }
+}
+
+/**
  * Implements hook_uninstall().
  */
 function media_facebook_post_uninstall() {

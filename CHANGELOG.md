@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog],
 and this project adheres to [Semantic Versioning].
 
 ## [Unreleased]
+### Added
+- Add default media thumbnail icon
 
 ## [0.1.0]
 ### Added

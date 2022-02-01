@@ -32,6 +32,7 @@ use Symfony\Component\Mime\MimeTypes;
  *   id = "facebook_post",
  *   label = @Translation("Facebook post"),
  *   allowed_field_types = {"string"},
+ *   default_thumbnail_filename = "facebook.png",
  *   description = @Translation("Provides media representation for a Facebook post."),
  * )
  */
