@@ -35,7 +35,6 @@ jobs:
           path: web/modules/custom/${{ github.event.repository.name }}
       - name: Run PHP_CodeSniffer
         run: |
-          ./vendor/bin/phpcs --config-set installed_paths '../../drupal/coder/coder_sniffer'
           ./vendor/bin/phpcs \
             --standard=Drupal,DrupalPractice \
             --runtime-set ignore_warnings_on_exit 1 \
