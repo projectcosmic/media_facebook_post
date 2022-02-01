@@ -152,6 +152,7 @@ class FacebookPost extends MediaSourceBase {
       'thumbnail_uri' => $this->t('Thumbnail URI'),
       'thumbnail_width' => $this->t('Thumbnail width'),
       'thumbnail_height' => $this->t('Thumbnail height'),
+      'permalink_url' => $this->t('Permalink url'),
     ];
   }
 
@@ -168,7 +169,8 @@ class FacebookPost extends MediaSourceBase {
     if ($post = $this->facebookFetcher->getPost($id)) {
       switch ($attribute_name) {
         case 'message':
-          return $post['message'] ?? NULL;
+        case 'permalink_url':
+          return $post[$attribute_name] ?? NULL;
 
         case 'created_time':
           return $this->dateFormatter->format(

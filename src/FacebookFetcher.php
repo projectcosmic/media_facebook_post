@@ -86,7 +86,7 @@ class FacebookFetcher implements FacebookFetcherInterface {
     try {
       $response = $this->httpClient->get("https://graph.facebook.com/v12.0/$id", [
         'query' => [
-          'fields' => 'created_time,full_picture,message',
+          'fields' => 'created_time,full_picture,message,permalink_url',
           'access_token' => $this->state->get('media_facebook_post.token'),
         ],
       ]);
