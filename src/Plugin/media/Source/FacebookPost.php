@@ -181,7 +181,7 @@ class FacebookPost extends MediaSourceBase {
 
         case 'thumbnail_uri':
           return isset($post['full_picture'])
-            ? $this->getLocalPictureUrl($post['full_picture'])
+            ? $this->getLocalPictureUrl($post)
             : NULL;
 
         case 'thumbnail_width':
@@ -205,13 +205,13 @@ class FacebookPost extends MediaSourceBase {
    * to download it. Adapted from
    * \Drupal\media\Plugin\media\Source\OEmbed::getLocalThumbnailUri().
    *
-   * @param string $remote_url
-   *   The URL to the image.
+   * @param array $post
+   *   The Facebook post information including the keys 'full_picture' and 'id'.
    *
    * @return string|null
    *   The local image URI, or NULL if it could not be downloaded.
    */
-  protected function getLocalPictureUrl($remote_url) {
+  protected function getLocalPictureUrl(array $post) {
     $directory = 'public://media_facebook_post';
 
     // The local image doesn't exist yet, so try to download it. First,
@@ -224,10 +224,10 @@ class FacebookPost extends MediaSourceBase {
       return NULL;
     }
 
-    // The local filename of the image is always a hash of its remote URL.
+    // The local filename of the image is always a hash of its ID.
     // If a file with that name already exists in the local directory,
     // regardless of its extension, return its URI.
-    $hash = Crypt::hashBase64($remote_url);
+    $hash = Crypt::hashBase64($post['id']);
     $files = $this->fileSystem->scanDirectory($directory, "/^$hash\..*/");
     if (count($files) > 0) {
       return reset($files)->uri;
@@ -235,9 +235,9 @@ class FacebookPost extends MediaSourceBase {
 
     // The local thumbnail doesn't exist yet, so we need to download it.
     try {
-      $response = $this->httpClient->request('GET', $remote_url);
+      $response = $this->httpClient->request('GET', $post['full_picture']);
       if ($response->getStatusCode() === 200) {
-        $local_thumbnail_uri = $directory . DIRECTORY_SEPARATOR . $hash . '.' . $this->getImageFileExtensionFromUrl($remote_url, $response);
+        $local_thumbnail_uri = $directory . DIRECTORY_SEPARATOR . $hash . '.' . $this->getImageFileExtensionFromUrl($post['full_picture'], $response);
         $this->fileSystem->saveData((string) $response->getBody(), $local_thumbnail_uri, FileSystemInterface::EXISTS_REPLACE);
         return $local_thumbnail_uri;
       }
@@ -247,7 +247,7 @@ class FacebookPost extends MediaSourceBase {
     }
     catch (FileException $e) {
       $this->logger->warning('Could not download remote thumbnail from {url}.', [
-        'url' => $remote_url,
+        'url' => $post['full_picture'],
       ]);
     }
 
