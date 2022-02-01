@@ -43,16 +43,16 @@ class MediaFacebookPostFetchTest extends MediaKernelTestBase {
     $data = [
       [
         'id' => "{$page_id}_10002",
-        'created_time' => date('c', strtotime('24 Jan 2022 09:00')),
+        'created_time' => date('c', strtotime('yesterday 01:00')),
       ],
       [
         'id' => "{$page_id}_10001",
-        'created_time' => date('c', strtotime('23 Jan 2022 08:00')),
+        'created_time' => date('c', strtotime('yesterday 02:00')),
       ],
     ];
     $new = [
-      'id' => "{$page_id}_10002",
-      'created_time' => date('c', strtotime('1 Feb 2022 08:00')),
+      'id' => "{$page_id}_10003",
+      'created_time' => date('c', time()),
     ];
 
     $fetcher = $this->createMock(FacebookFetcherInterface::class);
@@ -60,9 +60,6 @@ class MediaFacebookPostFetchTest extends MediaKernelTestBase {
       ->method('getPagePosts')
       ->willReturnOnConsecutiveCalls(NULL, $data, [$new, ...$data]);
     $this->container->set('media_facebook_post.facebook_fetcher', $fetcher);
-
-    $time = $this->createMock(TimeInterface::class);
-    $time->method('getRequestTime')->willReturn(strtotime('25 Jan 2022 10:00'));
 
     $this->container->get('cron')->run();
     $this->assertCount(0, Media::loadMultiple(), 'Queue worker fails gracefully.');
