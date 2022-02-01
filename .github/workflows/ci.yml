@@ -2,6 +2,8 @@ name: Continuous Integration
 
 on:
   push:
+    tags-ignore:
+      - '**'
     paths-ignore:
       # Files in .github do not affect the build; only for GitHub interaction.
       - .github/**
